@@ -23,9 +23,14 @@ class StickCanvas(tk.Canvas):
 
 
 class ButtonCanvas(tk.Canvas):
+
+    def __init__(self, *args, **kwargs):
+        super(ButtonCanvas, self).__init__(*args, **kwargs)
+        self.color = 'white'
+
     def update(self, value):
         if value == 1:
-            color = 'red'
+            color = self.color
         else:
             color = 'black'
 
@@ -43,13 +48,21 @@ class Application(tk.Frame):
         self.rstick_canvas = StickCanvas(self, width=100, height=100)
         self.rstick_canvas.grid(row=0, column=2, columnspan=2, rowspan=2)
         self.xbutton_canvas = ButtonCanvas(self, width=50, height=50)
-        self.xbutton_canvas.grid(row=0, column=4, columnspan=1, rowspan=1)
+        self.xbutton_canvas.grid(row=0, column=4, columnspan=1, rowspan=2)
+        self.xbutton_canvas.color = 'blue'
         self.abutton_canvas = ButtonCanvas(self, width=50, height=50)
-        self.abutton_canvas.grid(row=1, column=4, columnspan=1, rowspan=1)
+        self.abutton_canvas.grid(row=1, column=5, columnspan=1, rowspan=1)
+        self.abutton_canvas.color = 'green'
         self.ybutton_canvas = ButtonCanvas(self, width=50, height=50)
         self.ybutton_canvas.grid(row=0, column=5, columnspan=1, rowspan=1)
+        self.ybutton_canvas.color = 'yellow'
         self.bbutton_canvas = ButtonCanvas(self, width=50, height=50)
-        self.bbutton_canvas.grid(row=1, column=5, columnspan=1, rowspan=1)
+        self.bbutton_canvas.grid(row=0, column=6, columnspan=1, rowspan=2)
+        self.bbutton_canvas.color = 'red'
+        self.ltrigger_canvas = ButtonCanvas(self, width=50, height=100)
+        self.ltrigger_canvas.grid(row=0, column=7, columnspan=1, rowspan=2)
+        self.rtrigger_canvas = ButtonCanvas(self, width=50, height=100)
+        self.rtrigger_canvas.grid(row=0, column=8, columnspan=1, rowspan=2)
 
     def update(self):
         self.lstick_canvas.update(self.joystick.buttons['stick1'].coords)
@@ -58,6 +71,8 @@ class Application(tk.Frame):
         self.abutton_canvas.update(self.joystick.buttons['a'].value)
         self.ybutton_canvas.update(self.joystick.buttons['y'].value)
         self.bbutton_canvas.update(self.joystick.buttons['b'].value)
+        self.ltrigger_canvas.update(self.joystick.buttons['l'].value)
+        self.rtrigger_canvas.update(self.joystick.buttons['r'].value)
         self.after(10, self.update)
 
     def __init__(self, master=None):

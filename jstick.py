@@ -46,6 +46,8 @@ class Joystick:
         self.buttons['b'] = Button(1)
         self.buttons['x'] = Button(2)
         self.buttons['y'] = Button(3)
+        self.buttons['l'] = Button(10)
+        self.buttons['r'] = Button(11)
 
     def updateCoords(self):
         while True:
