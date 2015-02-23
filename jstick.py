@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 
-class Button():
+class Button:
 
         def __init__(self, button_id):
             self.button_id = button_id
@@ -15,10 +15,10 @@ class Button():
 
         def update(self, command):
             if command['type'] == 1 and command['button'] == self.button_id:
-                self.value = command.value
+                self.value = command['value']
 
 
-class Stick():
+class Stick:
 
         def __init__(self, x, y):
             self.x_value = x
@@ -34,16 +34,18 @@ class Stick():
 
 
 class Joystick:
-    jstick_file = open("/dev/input/js1", "rb")
-    stick1 = Stick(0, 1)
-    stick2 = Stick(3, 2)
-    buttons = []
+    jstick_file = open("/dev/input/js0", "rb")
+    buttons = {}
 
     def __init__(self):
         self.thread = threading.Thread(target=self.updateCoords)
         self.thread.start()
-        self.buttons.append(self.stick1)
-        self.buttons.append(self.stick2)
+        self.buttons['stick1'] = Stick(0, 1)
+        self.buttons['stick2'] = Stick(3, 2)
+        self.buttons['a'] = Button(0)
+        self.buttons['b'] = Button(1)
+        self.buttons['x'] = Button(2)
+        self.buttons['y'] = Button(3)
 
     def updateCoords(self):
         while True:
@@ -53,7 +55,8 @@ class Joystick:
             command['button'] = buf[7]
             command['type'] = buf[6]
             command['value'] = struct.unpack('h', buf[4:6])[0]
-            [button.update(command) for button in self.buttons]
+            for key, button in self.buttons.items():
+                button.update(command)
             time.sleep(0)
 
     def __del__(self):
