@@ -14,11 +14,14 @@ class StickCanvas(tk.Canvas):
         self.delete("all")
         width = self.winfo_width() * 0.95
         height = self.winfo_height() * 0.95
-        self.create_oval(0, 0, width, height)
-        self.create_oval(coords[0] - 5 + width/2,
-                         coords[1] - 5 + width/2,
-                         coords[0] + 5 + height/2,
-                         coords[1] + 5 + height/2,
+        lwidth = self.winfo_width() - width
+        lheight = self.winfo_height() - height
+        self.create_oval(0 + lwidth/2, 0 + lheight/2,
+                         width + lwidth/2, height + lheight/2)
+        self.create_oval(coords[0] - 5 + width/2 + lwidth/2,
+                         coords[1] - 5 + width/2 + lwidth/2,
+                         coords[0] + 5 + height/2 + lheight/2,
+                         coords[1] + 5 + height/2 + lheight/2,
                          fill='black')
 
 
@@ -29,15 +32,20 @@ class ButtonCanvas(tk.Canvas):
         self.color = 'white'
 
     def update(self, value):
+        self.delete("all")
+        width = self.winfo_width() * 0.9
+        height = self.winfo_height() * 0.9
+        lwidth = self.winfo_width() - width
+        lheight = self.winfo_height() - height
+
         if value == 1:
             color = self.color
         else:
-            color = 'black'
+            color = None
 
-        self.delete("all")
-        width = self.winfo_width() * 0.95
-        height = self.winfo_height() * 0.95
-        self.create_oval(0, 0, width, height, fill=color)
+        self.create_oval(0 + lwidth/2, 0 + lheight/2,
+                         width + lwidth/2, height + lheight/2,
+                         outline=self.color, fill=color, width=5)
 
 
 class Application(tk.Frame):
