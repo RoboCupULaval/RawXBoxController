@@ -34,10 +34,12 @@ class Stick:
 
 
 class Joystick:
-    jstick_file = open("/dev/input/js0", "rb")
     buttons = {}
 
-    def __init__(self):
+    def __init__(self, jstick_file="/dev/input/js0", debug=False):
+
+        self.debug = debug
+        self.jstick_file = open(jstick_file, "rb")
         self.thread = threading.Thread(target=self.updateCoords)
         self.thread.start()
         self.buttons['stick1'] = Stick(0, 1)
@@ -52,7 +54,8 @@ class Joystick:
     def updateCoords(self):
         while True:
             buf = self.jstick_file.read(8)
-            print(binascii.hexlify(buf))
+            if self.debug:
+                print(binascii.hexlify(buf))
             command = {}
             command['button'] = buf[7]
             command['type'] = buf[6]
