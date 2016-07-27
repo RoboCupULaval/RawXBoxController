@@ -7,12 +7,14 @@ cdef extern from "SerialProtocol.h" namespace "Streams":
         SerialProtocol() except +
         string createSpeedCommand(const float,const float,const float,const unsigned char)
         string createSetPidCommand(const float, const float, const float, const unsigned char)
+        string createKickCommand(const int, const unsigned char)
 
         unsigned char STARTBYTE
         unsigned char STOPBYTE
         unsigned char ESCAPEBYTE
         unsigned char SPEEDCOMMAND_ID
         unsigned char PIDCOMMAND_ID
+        unsigned char KICKCOMMAND_ID
 
 cdef class serial_protocol:
     cdef SerialProtocol *thisptr
@@ -22,3 +24,5 @@ cdef class serial_protocol:
         del self.thisptr
     def createSpeedCommand(self, const float x, const float y, const float theta, const unsigned char id):
         return self.thisptr.createSpeedCommand(x, y, theta, id)
+    def createKickCommand(self, const int p, const unsigned char id):
+        return self.thisptr.createKickCommand(p, id)

@@ -44,6 +44,7 @@ class Joystick:
         self.thread.start()
         self.buttons['stick1'] = Stick(0, 1)
         self.buttons['stick2'] = Stick(3, 2)
+        self.buttons['stick3'] = Stick(4, 5)
         self.buttons['a'] = Button(0)
         self.buttons['b'] = Button(1)
         self.buttons['x'] = Button(2)

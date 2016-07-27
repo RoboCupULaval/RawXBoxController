@@ -7,7 +7,6 @@ import jstick
 from PythonFramework.Util.Pose import Pose
 from PythonFramework.Framework import start_game
 
-
 class RemoteControlStrategy(Strategy):
     def __init__(self, field, referee, team, opponent_team):
         super().__init__(field, referee, team, opponent_team)
@@ -15,10 +14,15 @@ class RemoteControlStrategy(Strategy):
 
     def on_start(self):
 
-        player = self.team.players[0]
+        player = self.team.players[4]
 
         x = player.pose.position.x
         y = player.pose.position.y
+        
+        ball = self.field.ball.position
+
+        #print ("player " + str(player.pose.position))
+        #print ("Ball " + str(ball))
 
         move_x = self.joystick.buttons['stick1'].coords[0]
         move_y = self.joystick.buttons['stick1'].coords[1]*-1
@@ -38,19 +42,25 @@ class RemoteControlStrategy(Strategy):
             self._send_command(Command.Dribble(player, 1))
 
         else:
-            x = move_x / 100
-            y = move_y / 100
-            position = Position(y , -x) # -90 degree
+            #x = move_x
+            #y = move_y
+            
+            #x, y, theta = convertPositionToSpeed(player, ball.x ,ball.y, rotation * -1)
+            
+            #pose = Pose(position, rotation * -1)
+            
+            position = Position(ball.x, ball.y)
 
-            pose = Pose(position, rotation * -1)
+            #print(current_theta)
 
-            print(position)
-
-            command = Command.MoveToAndRotate(player, self.team, pose)
-            command.is_speed_command = True
-
+            command = Command.MoveTo(player, self.team, position)
             self._send_command(command)
+            #command.is_speed_command = True
+            
+            #print ("command " + str((x,y)))
 
+            #command = bytearray(protocol.createSpeedCommand(x*2,y*2 ,0, 0))
+            #ser.write(command)
 
 
     def on_halt(self):
@@ -58,8 +68,6 @@ class RemoteControlStrategy(Strategy):
 
     def on_stop(self):
         self.on_start()
-
-
 
 
 start_game(RemoteControlStrategy)

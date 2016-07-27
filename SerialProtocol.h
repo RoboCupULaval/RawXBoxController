@@ -21,12 +21,14 @@ public:
     SerialProtocol();
     std::string createSpeedCommand(const float x,const float y,const float theta,const unsigned char id);
     std::string createSetPidCommand(const float p, const float i, const float d, const unsigned char id);
+    std::string createKickCommand(const int p, const unsigned char id);
 
     static unsigned char STARTBYTE;
     static unsigned char STOPBYTE;
     static unsigned char ESCAPEBYTE;
     static unsigned char SPEEDCOMMAND_ID;
     static unsigned char PIDCOMMAND_ID;
+    static unsigned char KICKCOMMAND_ID;
 
 private:
     void insertFloatInPacket(float data, std::string &buffer);

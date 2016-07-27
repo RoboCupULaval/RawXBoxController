@@ -7,8 +7,9 @@ import sys
 from serial_protocol import serial_protocol
 
 baudRate = 115200
-
+speedfactor = 1
 joystick = jstick.Joystick()
+robotId = 0
 
 ## the previous method of choosing the serial port manually.
 #ser = serial.Serial('/dev/ttyUSB0', 115200)
@@ -49,29 +50,62 @@ while True:
     if ser.inWaiting():
       print(ser.read())
 
-    move_x = joystick.buttons['stick1'].coords[0]
-    move_y = joystick.buttons['stick1'].coords[1]*-1
+    move_y = -joystick.buttons['stick1'].coords[0]
+    move_x = -joystick.buttons['stick1'].coords[1]
+    
+    dpad_y = -joystick.buttons['stick3'].coords[0]
+    dpad_x = -joystick.buttons['stick3'].coords[1]
+	
+    max_rotation_freq = 1
 
-    rotation  = joystick.buttons['stick2'].coords[0]*3 #times 3 for bigger rotation speed
+    rotation  = -joystick.buttons['stick2'].coords[0]*2*3.1416*max_rotation_freq # Valeur entre -1 et 1. vitesse de rotation envoyé == 0.8 RPM
     kick_command = joystick.buttons['a'].value
     dribble_command = joystick.buttons['b'].value
-
+    speedfactor_command = joystick.buttons['r'].value - joystick.buttons['l'].value
+    resetspeedfactor_command = joystick.buttons['y'].value
     if (kick_command):
-        pass
+        print("kick!!")
+        command = bytearray(protocol.createKickCommand(10,robotId))
+        ser.write(command)
         #_send_command(Command.Kick(player, 4))
 
     elif (dribble_command):
-        pass
-        #self._send_command(Command.Dribble(player, 1))
+        print("kick harder!!")
+        command = bytearray(protocol.createKickCommand(1000,robotId))
+        ser.write(command)
+    elif (resetspeedfactor_command):
+        print("speedfactor set to 1")
+        speedfactor = 1
 
+    max_speed = 1.44
+    if (speedfactor > max_speed):
+        speedfactor = max_speed
+    elif (speedfactor < 0.1):
+        speedfactor = 0.1
+    elif (speedfactor_command > 0):
+        speedfactor = speedfactor + 0.02
+    elif (speedfactor_command < 0):
+        speedfactor = speedfactor - 0.02
+
+        #self._send_command(Command.Dribble(player, 1))
+	# Use dpad if not null
+    if dpad_x != 0 or dpad_y != 0:
+        x = dpad_x
+        y = dpad_y
     else:
         x = move_x
         y = move_y
-        x, y = (y*0.5 , -x*0.5) # -90 degree changement de valeur !!! wtg 18 septembre 2015
-        print (x,y)
-        command = bytearray(protocol.createSpeedCommand(x,y,rotation, 0))
-        #command[3:7] = command[6:2:-1]
-        #command[7:11] = command[10:6:-1]
-        #command[11:15] = command[14:10:-1]
-        ser.write(command)
+
+    velocity_module = (x**2+y**2)**0.5
+    if (velocity_module == 0):
+        velocity_module = 1
+
+    (x, y) = (speedfactor*x/velocity_module, speedfactor*y/velocity_module)    
+    
+    print (x,y,rotation)
+    command = bytearray(protocol.createSpeedCommand(x,y,rotation, robotId))
+    #command[3:7] = command[6:2:-1]
+    #command[7:11] = command[10:6:-1]
+    #command[11:15] = command[14:10:-1]
+    ser.write(command)
 

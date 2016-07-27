@@ -7,6 +7,7 @@ unsigned char SerialProtocol::STOPBYTE = 0x7F;
 unsigned char SerialProtocol::ESCAPEBYTE = 0x7D;
 unsigned char SerialProtocol::SPEEDCOMMAND_ID = 1;
 unsigned char SerialProtocol::PIDCOMMAND_ID = 2;
+unsigned char SerialProtocol::KICKCOMMAND_ID = 3;
 
 SerialProtocol::SerialProtocol(){
 }
@@ -38,6 +39,19 @@ std::string SerialProtocol::createSetPidCommand(const float p,
     this->insertFloatInPacket(p, buffer);
     this->insertFloatInPacket(i, buffer);
     this->insertFloatInPacket(d, buffer);
+    buffer += this->STOPBYTE;
+
+    return buffer;
+}
+std::string SerialProtocol::createKickCommand(const int p,
+                                	const unsigned char id){
+	std::string buffer;
+    buffer += this->STARTBYTE;
+    buffer += id;
+    buffer += this->KICKCOMMAND_ID;
+    this->insertIntInPacket(p, buffer);
+    this->insertFloatInPacket(0.0, buffer);
+    this->insertFloatInPacket(0.0, buffer);
     buffer += this->STOPBYTE;
 
     return buffer;
