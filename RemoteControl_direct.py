@@ -3,23 +3,20 @@ import glob  # for automatic choosing of the serial port
 import serial
 import jstick
 import time
-import sys
-from serial_protocol import serial_protocol
+import serial_protocol as protocol
 
 baudRate = 115200
 speedfactor = 1
+max_rotation_freq = 1
 joystick = jstick.Joystick()
 robotId = 0
+robot_id_changed = False
 
-## the previous method of choosing the serial port manually.
-#ser = serial.Serial('/dev/ttyUSB0', 115200)
-#ser = serial.Serial('/dev/ttyUSB1', 115200)
-#ser = serial.Serial('/dev/ttyUSB2', 115200)
-
-## the new all-improved method that is semi-automatic
+# the new all-improved method that is semi-automatic
 # PROPOSED ENHANCEMENT: detect which device is the communication tower
 ttyListA = glob.glob('/dev/ttyUSB*')
-ttyList = ttyListA
+ttyListB = glob.glob('/dev/ttyACM*')
+ttyList = ttyListA or ttyListB
 
 if len(ttyList) == 0:
     print('No serial device found! Exiting...')
@@ -41,41 +38,38 @@ else:
     print('Serial device selected: ' + str(ttyList[inputNumber]))
 time.sleep(1)
 
-protocol = serial_protocol()
 
-while True:
+def check_buttons(joystick):
+    global speedfactor, robotId, robot_id_changed
 
-    time.sleep(0.03)
-
-    if ser.inWaiting():
-      print(ser.read())
-
-    move_y = -joystick.buttons['stick1'].coords[0]
-    move_x = -joystick.buttons['stick1'].coords[1]
-    
-    dpad_y = -joystick.buttons['stick3'].coords[0]
-    dpad_x = -joystick.buttons['stick3'].coords[1]
-	
-    max_rotation_freq = 1
-
-    rotation  = -joystick.buttons['stick2'].coords[0]*2*3.1416*max_rotation_freq # Valeur entre -1 et 1. vitesse de rotation envoyé == 0.8 RPM
     kick_command = joystick.buttons['a'].value
     dribble_command = joystick.buttons['b'].value
     speedfactor_command = joystick.buttons['r'].value - joystick.buttons['l'].value
     resetspeedfactor_command = joystick.buttons['y'].value
-    if (kick_command):
+    toggle_robot_command = joystick.buttons['x'].value
+    if kick_command:
         print("kick!!")
-        command = bytearray(protocol.createKickCommand(10,robotId))
-        ser.write(command)
-        #_send_command(Command.Kick(player, 4))
+        # TODO: Not implemented yet
+        # command = bytearray(protocol.create_kick_command(10,robotId))
+        # ser.write(command)
 
-    elif (dribble_command):
+    elif dribble_command:
         print("kick harder!!")
-        command = bytearray(protocol.createKickCommand(1000,robotId))
-        ser.write(command)
-    elif (resetspeedfactor_command):
+        # TODO: Not implemented yet
+        # command = bytearray(protocol.create_kick_command(1000,robotId))
+        # ser.write(command)
+    elif resetspeedfactor_command:
         print("speedfactor set to 1")
         speedfactor = 1
+
+    if toggle_robot_command:
+        if not robot_id_changed:
+            robot_id_changed = True
+            robotId = 4 if robotId == 0 else 0
+            print("robotID set to %d" % robotId)
+    else:
+        robot_id_changed = False
+
 
     max_speed = 1.44
     if (speedfactor > max_speed):
@@ -87,7 +81,25 @@ while True:
     elif (speedfactor_command < 0):
         speedfactor = speedfactor - 0.02
 
-        #self._send_command(Command.Dribble(player, 1))
+
+while True:
+
+    time.sleep(0.03)
+
+    if ser.inWaiting():
+        print(ser.read())
+
+    move_y = -joystick.buttons['stick1'].coords[0]
+    move_x = -joystick.buttons['stick1'].coords[1]
+
+    dpad_y = -joystick.buttons['stick3'].coords[0]
+    dpad_x = -joystick.buttons['stick3'].coords[1]
+
+    # Valeur entre -1 et 1. vitesse de rotation envoyé == 0.8 RPM
+    rotation  = -joystick.buttons['stick2'].coords[0]*2*3.1416*max_rotation_freq
+
+    check_buttons(joystick)
+
 	# Use dpad if not null
     if dpad_x != 0 or dpad_y != 0:
         x = dpad_x
@@ -100,12 +112,9 @@ while True:
     if (velocity_module == 0):
         velocity_module = 1
 
-    (x, y) = (speedfactor*x/velocity_module, speedfactor*y/velocity_module)    
-    
-    print (x,y,rotation)
-    command = bytearray(protocol.createSpeedCommand(x,y,rotation, robotId))
-    #command[3:7] = command[6:2:-1]
-    #command[7:11] = command[10:6:-1]
-    #command[11:15] = command[14:10:-1]
+    (x, y) = (speedfactor*x/velocity_module, speedfactor*y/velocity_module)
+
+    print (robotId, x,y,rotation)
+    command = bytearray(protocol.create_speed_command(x, y, rotation, robotId))
     ser.write(command)
 
